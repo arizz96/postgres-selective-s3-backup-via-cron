@@ -14,15 +14,18 @@ echo "MASTER_OBJ_CLMN=${MASTER_OBJ_CLMN}"
 echo "STANDARD_TABLES=${STANDARD_TABLES[@]}"
 echo "MASTER_CHILD_TABLES=${MASTER_CHILD_TABLES[@]}"
 
-CMD=$'COPY (SELECT * FROM '$MASTER_OBJ_TBL$' WHERE id IN ('$MASTER_OBJ_IDS$')) TO \'/tmp/custom_dump/'$MASTER_OBJ_TBL$'.csv\' DELIMITER \';\' CSV HEADER;\n'
+CMD=$'COPY (SELECT * FROM '$MASTER_OBJ_TBL$' WHERE id IN ('$MASTER_OBJ_IDS$')) TO STDOUT DELIMITER \';\' CSV HEADER;\n'
+psql -d $PGDATABASE -U $PGUSER -c "$CMD" > /tmp/custom_dump/$MASTER_OBJ_TBL.csv
 for OBJECT in "${STANDARD_TABLES[@]}"
 do
-  CMD=$CMD$'COPY (SELECT * FROM '$OBJECT$') TO \'/tmp/custom_dump/'$OBJECT$'.csv\' DELIMITER \';\' CSV HEADER;\n'
+  CMD=$'COPY (SELECT * FROM '$OBJECT$') TO STDOUT DELIMITER \';\' CSV HEADER;\n'
+  psql -d $PGDATABASE -U $PGUSER -c "$CMD" > /tmp/custom_dump/$OBJECT.csv
 done
 
 for OBJECT in "${MASTER_CHILD_TABLES[@]}"
 do
-  CMD=$CMD$'COPY (SELECT * FROM '$OBJECT$' WHERE '$MASTER_OBJ_CLMN$' IN ('$MASTER_OBJ_IDS$')) TO \'/tmp/custom_dump/'$OBJECT$'.csv\' DELIMITER \';\' CSV HEADER;\n'
+  CMD=$'COPY (SELECT * FROM '$OBJECT$' WHERE '$MASTER_OBJ_CLMN$' IN ('$MASTER_OBJ_IDS$')) TO STDOUT DELIMITER \';\' CSV HEADER;\n'
+  psql -d $PGDATABASE -U $PGUSER -c "$CMD" > /tmp/custom_dump/$OBJECT.csv
 done
 
 psql -d $PGDATABASE -U $PGUSER -c "$CMD"
@@ -40,6 +43,6 @@ echo $CMD >> '/tmp/custom_dump/import_script.sh'
 
 zip -r /tmp/custom_dump/backup.zip /tmp/custom_dump/
 
-echo "`date` Uploading to S3"
-/backup/s3upload.rb
-echo "`date` Done!"
+# echo "`date` Uploading to S3"
+# /backup/s3upload.rb
+# echo "`date` Done!"
