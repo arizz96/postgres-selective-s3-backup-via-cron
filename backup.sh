@@ -39,3 +39,7 @@ CMD=$'psql -d ${PGDATABASE} -U ${PGUSER} -c "'"$CMD"'"'
 echo $CMD >> '/tmp/custom_dump/import_script.sh'
 
 zip -r /tmp/custom_dump/backup.zip /tmp/custom_dump/
+
+echo "`date` Uploading to S3"
+/backup/s3upload.rb
+echo "`date` Done!"
