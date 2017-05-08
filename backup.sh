@@ -34,7 +34,7 @@ pg_dump -s $PGDATABASE > /tmp/custom_dump/schema.sql
 echo "Generating import script..."
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -f schema.sql\n' > '/tmp/custom_dump/import_script.sh'
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"\COPY '$MASTER_OBJ_TBL$' FROM \''$MASTER_OBJ_TBL$'.csv\' DELIMITER \';\' CSV HEADER;\"\n' >> '/tmp/custom_dump/import_script.sh'
-for OBJECT in "${STANDARD_TABLES[@]}" "${STANDARD_TABLES[@]}"
+for OBJECT in "${STANDARD_TABLES[@]}" "${MASTER_CHILD_TABLES[@]}"
 do
   echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"\COPY '$OBJECT$' FROM \''$OBJECT$'.csv\' DELIMITER \';\' CSV HEADER;\"\n' >> '/tmp/custom_dump/import_script.sh'
 done
