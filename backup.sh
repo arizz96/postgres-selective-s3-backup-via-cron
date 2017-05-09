@@ -35,7 +35,7 @@ SEQUENCES=($(psql -d ${PGDATABASE} -U ${PGUSER} -t -c "SELECT sequence_name from
 echo '' > /tmp/custom_dump/sequences.sql
 for SEQUENCE in "${SEQUENCES[@]}"
 do
-  CMD=$'SELECT \'ALTER SEQUENCE \' || \''$SEQUENCE$'\' || \' START WITH \' || last_value FROM '$SEQUENCE$';'
+  CMD=$'SELECT \'ALTER SEQUENCE \' || \''$SEQUENCE$'\' || \' START WITH \' || last_value || \';\' FROM '$SEQUENCE$';'
   psql -d $PGDATABASE -U $PGUSER -t -c "$CMD" >> /tmp/custom_dump/sequences.sql
 done
 
@@ -47,6 +47,8 @@ for OBJECT in "${STANDARD_TABLES[@]}" "${MASTER_CHILD_TABLES[@]}"
 do
   echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"\COPY '$OBJECT$' FROM \''$OBJECT$'.csv\' DELIMITER \';\' CSV HEADER;\"\n' >> '/tmp/custom_dump/import_script.sh'
 done
+echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"REINDEX DATABASE ${PGDATABASE};\"\n' >> '/tmp/custom_dump/import_script.sh'
+chmod +x /tmp/custom_dump/import_script.sh
 
 zip -r /tmp/custom_dump/backup.zip /tmp/custom_dump/
 
