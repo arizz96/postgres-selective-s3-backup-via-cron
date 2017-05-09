@@ -48,6 +48,7 @@ do
   echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"\COPY '$OBJECT$' FROM \''$OBJECT$'.csv\' DELIMITER \';\' CSV HEADER;\"\n' >> '/tmp/custom_dump/import_script.sh'
 done
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"REINDEX DATABASE ${PGDATABASE};\"\n' >> '/tmp/custom_dump/import_script.sh'
+chmod +x /tmp/custom_dump/import_script.sh
 
 zip -r /tmp/custom_dump/backup.zip /tmp/custom_dump/
 
