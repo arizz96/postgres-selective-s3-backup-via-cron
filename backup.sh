@@ -30,9 +30,11 @@ done
 
 psql -d $PGDATABASE -U $PGUSER -c "$CMD"
 pg_dump -s $PGDATABASE > /tmp/custom_dump/schema.sql
+psql -d ${PGDATABASE} -U ${PGUSER} -t -c "SELECT 'ALTER SEQUENCE ' || sequence_name || ' START WITH ' ||  start_value || ';' from information_schema.sequences;" > /tmp/custom_dump/sequences.sql
 
 echo "Generating import script..."
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -f schema.sql\n' > '/tmp/custom_dump/import_script.sh'
+echo $'psql -d ${PGDATABASE} -U ${PGUSER} -f sequences.sql\n' >> '/tmp/custom_dump/import_script.sh'
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"\COPY '$MASTER_OBJ_TBL$' FROM \''$MASTER_OBJ_TBL$'.csv\' DELIMITER \';\' CSV HEADER;\"\n' >> '/tmp/custom_dump/import_script.sh'
 for OBJECT in "${STANDARD_TABLES[@]}" "${MASTER_CHILD_TABLES[@]}"
 do
