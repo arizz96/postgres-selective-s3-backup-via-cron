@@ -35,7 +35,7 @@ SEQUENCES=($(psql -d ${PGDATABASE} -U ${PGUSER} -t -c "SELECT sequence_name from
 echo '' > /tmp/custom_dump/sequences.sql
 for SEQUENCE in "${SEQUENCES[@]}"
 do
-  CMD=$'SELECT \'ALTER SEQUENCE \' || \''$SEQUENCE$'\' || \' START WITH \' || last_value || \';\' FROM '$SEQUENCE$';'
+  CMD=$'SELECT \'SELECT setval(\'\' \' || \''$SEQUENCE$'\' || \' \'\', \' || last_value || \');\' FROM '$SEQUENCE$';'
   psql -d $PGDATABASE -U $PGUSER -t -c "$CMD" >> /tmp/custom_dump/sequences.sql
 done
 
