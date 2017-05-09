@@ -30,7 +30,14 @@ done
 
 psql -d $PGDATABASE -U $PGUSER -c "$CMD"
 pg_dump -s $PGDATABASE > /tmp/custom_dump/schema.sql
-psql -d ${PGDATABASE} -U ${PGUSER} -t -c "SELECT 'ALTER SEQUENCE ' || sequence_name || ' START WITH ' ||  start_value || ';' from information_schema.sequences;" > /tmp/custom_dump/sequences.sql
+
+SEQUENCES=($(psql -d ${PGDATABASE} -U ${PGUSER} -t -c "SELECT sequence_name from information_schema.sequences;"))
+echo '' > /tmp/custom_dump/sequences.sql
+for SEQUENCE in "${SEQUENCES[@]}"
+do
+  CMD=$'SELECT \'ALTER SEQUENCE \' || \''$SEQUENCE$'\' || \' START WITH \' || last_value FROM '$SEQUENCE$';'
+  psql -d $PGDATABASE -U $PGUSER -t -c "$CMD" >> /tmp/custom_dump/sequences.sql
+done
 
 echo "Generating import script..."
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -f schema.sql\n' > '/tmp/custom_dump/import_script.sh'
