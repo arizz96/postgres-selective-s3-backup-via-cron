@@ -42,10 +42,14 @@ done
 echo "Generating import script..."
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -f schema.sql\n' > '/tmp/custom_dump/import_script.sh'
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -f sequences.sql\n' >> '/tmp/custom_dump/import_script.sh'
+echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"ALTER TABLE '$MASTER_OBJ_TBL$' DISABLE TRIGGER ALL;\"\n' >> '/tmp/custom_dump/import_script.sh'
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"\COPY '$MASTER_OBJ_TBL$' FROM \''$MASTER_OBJ_TBL$'.csv\' DELIMITER \';\' CSV HEADER;\"\n' >> '/tmp/custom_dump/import_script.sh'
+echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"ALTER TABLE '$MASTER_OBJ_TBL$' ENABLE TRIGGER ALL;\"\n' >> '/tmp/custom_dump/import_script.sh'
 for OBJECT in "${STANDARD_TABLES[@]}" "${MASTER_CHILD_TABLES[@]}"
 do
+  echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"ALTER TABLE '$OBJECT$' DISABLE TRIGGER ALL;\"\n' >> '/tmp/custom_dump/import_script.sh'
   echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"\COPY '$OBJECT$' FROM \''$OBJECT$'.csv\' DELIMITER \';\' CSV HEADER;\"\n' >> '/tmp/custom_dump/import_script.sh'
+  echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"ALTER TABLE '$OBJECT$' ENABLE TRIGGER ALL;\"\n' >> '/tmp/custom_dump/import_script.sh'
 done
 echo $'psql -d ${PGDATABASE} -U ${PGUSER} -c \"REINDEX DATABASE ${PGDATABASE};\"\n' >> '/tmp/custom_dump/import_script.sh'
 chmod +x /tmp/custom_dump/import_script.sh
